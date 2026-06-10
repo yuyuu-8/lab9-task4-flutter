@@ -52,7 +52,10 @@ void main() {
 
   testWidgets('home shows the total-tracks card with seeded data', (tester) async {
     await tester.pumpWidget(_harness(const HomeShell()));
-    await tester.pumpAndSettle();
+    // pumpAndSettle зависает из-за анимаций fl_chart; используем фиксированные pump'ы,
+    // чтобы дать асинхронной инициализации Hive + Riverpod завершиться.
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Всего треков'), findsOneWidget);
     expect(find.text('Главная'), findsWidgets);
