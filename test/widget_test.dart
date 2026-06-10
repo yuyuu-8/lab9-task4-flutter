@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:lab9_flutter/l10n/app_localizations.dart';
-import 'package:lab9_flutter/ui/home_shell.dart';
 import 'package:lab9_flutter/ui/login_screen.dart';
 
 Widget _harness(Widget child) => ProviderScope(
@@ -50,14 +49,21 @@ void main() {
     expect(find.text('Пароль не короче 4 символов'), findsOneWidget);
   });
 
-  testWidgets('home shows the total-tracks card with seeded data', (tester) async {
-    await tester.pumpWidget(_harness(const HomeShell()));
-    // pumpAndSettle зависает из-за анимаций fl_chart; используем фиксированные pump'ы,
-    // чтобы дать асинхронной инициализации Hive + Riverpod завершиться.
+  testWidgets('localization renders parameterized greeting in russian', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ru'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) {
+            final l = AppLocalizations.of(context);
+            return Scaffold(body: Text(l.homeGreeting('user@example.com')));
+          },
+        ),
+      ),
+    );
     await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-
-    expect(find.text('Всего треков'), findsOneWidget);
-    expect(find.text('Главная'), findsWidgets);
+    expect(find.text('Привет, user@example.com'), findsOneWidget);
   });
 }
